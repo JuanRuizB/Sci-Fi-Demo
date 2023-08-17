@@ -25,9 +25,11 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int _currentAmmo;
 
-    private int _maxAmmo = 50;
+    private int _maxAmmo = 500;
 
     private bool isReloading = false;
+
+    public bool hasCoin = false;
 
     private UIManager _uiManager;
 

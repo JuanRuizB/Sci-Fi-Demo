@@ -25,7 +25,10 @@ public class Player : MonoBehaviour
     [SerializeField]
     private int _currentAmmo;
 
-    private int _maxAmmo = 500;
+    [SerializeField]
+    private GameObject _weapon;
+
+    public int maxAmmo = 500;
 
     private bool isReloading = false;
 
@@ -41,7 +44,7 @@ public class Player : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         _audioSource = GetComponent<AudioSource>();
 
-        _currentAmmo = _maxAmmo;
+        _currentAmmo = maxAmmo;
 
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
     }
@@ -74,37 +77,50 @@ public class Player : MonoBehaviour
     IEnumerator Reload()
     {
         yield return new WaitForSeconds(1.5f);
-        _currentAmmo = _maxAmmo;
+        _currentAmmo = maxAmmo;
         isReloading = false;
         _uiManager.UpdateAmmo(_currentAmmo);
     }
 
     void Shoot()
     {
-
-        Ray rayOrigin = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-        RaycastHit hitInfo;
-        _currentAmmo--;
-        _uiManager.UpdateAmmo(_currentAmmo);
-        if (!_audioSource.isPlaying)
+        if (_weapon.activeSelf)
         {
-            _audioSource.Play();
-            _muzzleFlashPrefab.SetActive(true);
+            Ray rayOrigin = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+            RaycastHit hitInfo;
+            _currentAmmo--;
+            _uiManager.UpdateAmmo(_currentAmmo);
+            if (!_audioSource.isPlaying)
+            {
+                _audioSource.Play();
+                _muzzleFlashPrefab.SetActive(true);
+            }
+            if (Physics.Raycast(rayOrigin, out hitInfo))
+            {
+                GameObject _hit = Instantiate(_hitMarketPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
+                Destroy(_hit, 1f);
+
+                Destructable crate = hitInfo.transform.GetComponent<Destructable>();
+                if (crate != null)
+                {
+                    crate.DestroyCrate();
+                }
+
+
+            }
+
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                _muzzleFlashPrefab.SetActive(false);
+                _audioSource.Stop();
+            }
         }
-        if (Physics.Raycast(rayOrigin, out hitInfo))
-        {
-            GameObject _hit = Instantiate(_hitMarketPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
-            Destroy(_hit, 1f);
-        }
+    }
 
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            _muzzleFlashPrefab.SetActive(false);
-            _audioSource.Stop();
-        }
-
-
+    public void EnableWeapons()
+    {
+        _weapon.SetActive(true);
     }
 
     void CalculeMovement()

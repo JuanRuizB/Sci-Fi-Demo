@@ -20,6 +20,6 @@ public class UIManager : MonoBehaviour
 
     public void UpdateCoin()
     {
-        _coin.SetActive(true);
+        _coin.SetActive(!_coin.activeSelf);
     }
 }
